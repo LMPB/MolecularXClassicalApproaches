@@ -1,9 +1,12 @@
 
+library(vegan)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(BiodiversityR)
+library(ggVennDiagram)
 
 ############dbRDA##############
-library(vegan)
-library(ggplot2)
-
 #Import data
 tab=read.csv(file ="1M/mdbRDA_s.csv", header=T, row.names="id", sep=";")
 
@@ -77,8 +80,7 @@ text(dbRDA, dis="bp", col="red", cex=0.9, font = 3)
 #text(dbRDA,"sites", col="black", cex=0.5, pos=3) #aqui adiciona nome aos pontos
 text("p=0.001", x=-3, y=-2)
 }
-
-######## 
+### 
 {
 #Calculation of variance explained by dbRDA axes
 # Calculate the eigenvalues of the dbRDA
@@ -92,10 +94,8 @@ head(valor_acumuladoM)
 }
 
 #############diversity index ##################
-library(BiodiversityR)
-
  #Import data
-  t=read.csv(file ="1M/mdbRDAnew_g.csv",
+  t=read.csv(file ="mdbRDAnew_g.csv",
              header=T,sep=";",row.names="id")
   
   #apply diversity index
@@ -111,16 +111,14 @@ library(BiodiversityR)
   resultM[,2:6]=cbind(x1,x2,x3,x4,x5)
   colnames(resultM)=c("site","richness M","Shannon M","Jevenness M","Simpson M","Eevenness M")
 
-  #boxplot graphic
-library(ggplot2)
+#boxplot graphic
 ##### SHANNON
 {
   hlinha= cbind.data.frame(graphic$Shannon.M, graphic$Shannon.16S, 
                            graphic$Shannon.18S, graphic$site)
   
   colnames(hlinha)=c("Microscopy", "16S","18S","site")
-  library(tidyr)
-  #transformando a tabela em formato longo
+
   hlinha=pivot_longer(hlinha, names_to = "index",values_to = "Shannon_Diversity_Index", -site)
   
   ggplot(hlinha, aes(x=index,y=Shannon_Diversity_Index))+
@@ -135,8 +133,6 @@ library(ggplot2)
   
   colnames(d)=c("Microscopy", "16S","18S","site")
   
-  #library(tidyr)
-  #transformando a tabela em formato longo
   d=pivot_longer(d, names_to = "index",values_to = "Simpson_Diversity_Index", -site)
   
   ggplot(d, aes(x=index,y=Simpson_Diversity_Index))+
@@ -153,8 +149,6 @@ library(ggplot2)
   
   colnames(r)=c("Microscopy", "16S","18S","site")
   
-  #library(tidyr)
-  #transformando a tabela em formato longo
   r=pivot_longer(r, names_to = "index",values_to = "Richness_Index", -site)
   
   ggplot(r, aes(x=index,y=Richness_Index))+
@@ -164,15 +158,13 @@ library(ggplot2)
   #xlab("cyl")
   #geom_jitter(width = 0.5, aes(color = site))
 }
-##### EEVENNES
+#####EEVENNES
 {
   e=cbind.data.frame(graphic$Eevenness.M, graphic$Eevenness.16S, 
                      graphic$Eevenness.18S, graphic$site)
   
   colnames(e)=c("Microscopy", "16S","18S","site")
   
-  #library(tidyr)
-  #transformando a tabela em formato longo
   e=pivot_longer(e, names_to = "index",values_to = "Evenness_Index", -site)
   
   ggplot(e, aes(x=index,y=Evenness_Index))+
@@ -183,7 +175,7 @@ library(ggplot2)
   #geom_jitter(width = 0.5, aes(color = site))
 }
   
-#############Statistical comparison of alpha diversity indices ##################
+########Statistical comparison of diversity indices#########
   #dataframe 
   alfa = cbind.data.frame(result16$richness, result16$Shannon, result16$Simpson, result16$Eevenness,
                           result18$richness, result18$Shannon, result18$Simpson, result18$Eevennes,
@@ -192,7 +184,6 @@ library(ggplot2)
   
   colnames(alfa)=c("richness_16", "shannon_16","simpson_16", "evenness_16", "richness_18", "shannon_18", "simpson_18","evenness_18", "richness_m", "shannon_m", "simpson_m","evennesse_m","site")
   
-  library(tidyr)
   #long format table
   alfa=pivot_longer(alfa, names_to = "index",values_to = "values", -site)
   
@@ -203,3 +194,117 @@ library(ggplot2)
   # wilcoxon test
   a=pairwise.wilcox.test(alfa$values,alfa$index,paired=T,p.adjust.method = "fdr")
   View(a)
+  
+  #### Veen Diagram ####
+  #tab of items
+  Vg=read.csv("venn.csv", sep=";")
+  
+  process_region_data(Venn(Vg))
+  
+  # 3D Venn diagram
+  ggVennDiagram(Vg,label_color="black", set_color="black")+
+    scale_fill_gradient(low = "#FFF3E0", high = "#F57C00")
+  
+  scale_fill_gradient(low = "#F5F5F5", high = "#9E9E9E")
+  
+  scale_fill_gradient(low = "#FFE0B2", high = "#E65100")
+  scale_fill_gradient(low = "#E0F7FA", high = "#006064")
+  
+  exclusive_Vgm <- setdiff(Vg$genero_m, union(Vg$genero_16, Vg$genero_18))
+  print(exclusive_Vgm)
+  
+  exclusive_V18 <- setdiff(Vg$genero_18, union(Vg$genero_16, Vg$genero_m))
+  print(exclusive_V18)
+  
+  exclusive_V16 <- setdiff(Vg$genero_16, union(Vg$genero_18, Vg$genero_m))
+  print(exclusive_V16)
+  
+  intersecçãom16 = intersect(Vg$genero_m, Vg$genero_16)
+  print(intersecçãom16)
+  
+  intersecçãom18 = intersect(Vg$genero_m, Vg$genero_18)
+  print(intersecçãom18)
+  
+  intersecção1618 = intersect(Vg$genero_16, Vg$genero_18)
+  print(intersecção1618)
+  
+  intersecçãom1618 =  intersect(intersect(Vg$genero_16, Vg$genero_18), Vg$genero_m)
+  print(intersecçãom1618)
+  
+  #### z-scrore ####
+  # Table by method
+  metodo=read.csv("z_score_metodo.csv", sep=";", row.names="id")
+  
+  # Global table
+  global=read.csv("z-score_global.csv", sep=";")
+  
+  metodo <- metodo %>%
+    mutate(across(
+      where(is.character),
+      ~ na_if(., "n.d.a")         
+    )) %>%
+    mutate(across(
+      matches("media|sd"),         
+      ~ as.numeric(gsub(",", ".", .))  
+    ))
+  
+  dados_z <- metodo %>%
+    mutate(
+      z_16S = (media_16 - media_global) / sd_global,
+      z_18S = (media_18 - media_global) / sd_global,
+      Microscopy = (media_m - media_global) / sd_global
+    )
+  
+  dados=dados_z[,9:11]
+  dados= t(dados)
+  
+  dados=read.csv("dados.csv", sep=";", row.names="id")
+  
+  { 
+    
+    library(pheatmap)
+    pheatmap(dados,
+             cluster_rows = FALSE,     
+             cluster_cols = TRUE,        
+             main = "Heatmap",
+             color = colorRampPalette(c("blue", "white", "red"))(50),
+             fontsize_row = 8,
+             fontsize_col = 10,
+             cellwidth = 7,
+             cellheight = 30,
+             border_color = NA)
+  }
+  
+  dados_long <- as.data.frame(dados) %>%    
+    mutate(Metodo = rownames(dados)) %>%     
+    pivot_longer(
+      cols = -Metodo,                        
+      names_to = "Genero", 
+      values_to = "Valor"
+    )
+  ordem_generos <- dados_long %>%
+    group_by(Genero) %>%
+    summarise(media_valor = mean(Valor, na.rm = TRUE)) %>%
+    arrange(desc(media_valor)) %>%
+    pull(Genero)
+  
+  dados_long$Genero <- factor(dados_long$Genero, levels = ordem_generos)
+  
+  ggplot(dados_long, aes(x = Genero, y = Metodo, fill = Valor)) +
+    geom_tile(color = NA, width = 1, height = 1) + 
+    scale_fill_gradient2(
+      low = "#4169E1", mid = "white", high = "red",
+      na.value = "grey85", midpoint = 0, name = "Valor"
+    ) +
+    coord_fixed(ratio = 5) +                       
+    theme_minimal(base_size = 11) +
+    theme(
+      axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1, size = 10),
+      axis.text.y = element_text(size = 9),
+      panel.grid = element_blank(),
+      axis.title = element_blank(),
+      plot.title = element_text(hjust = 0.5, face = "bold")
+    ) +
+    labs(title = "Heatmap")
+  
+  

@@ -1,17 +1,27 @@
 
+############dbRDA##############
+library(ggplot2)
 library(vegan)
 library(tidyr)
-library(ggplot2)
 library(dplyr)
 library(BiodiversityR)
 library(ggVennDiagram)
+library(pheatmap)
 
-############dbRDA##############
 #Import data
-tab=read.csv(file ="mdbRDA_s.csv", header=T, row.names="id", sep=";")
+# to apply for 16S or 18S replace the table with the data 16S or 18S
+tab=read.csv(file = "microscopy.csv",header=T,row.names="id",sep=";")
+tab=tab[,1:59] 
+tab<-t(tab)
+tab <- as.data.frame(tab/rowSums(tab))
+rowSums(tab)
+
+rownames(tab) <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40","41", "42", "43", "44", "45", "46", "47", "48", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60")
+
+tab=t(tab)
 
 #environmental data
-amb <-read.csv(file="BroaMO_envdbrda.csv", header=T, row.names=1, sep=";") 
+amb <-read.csv(file="dbRDA/BroaMO_envdbrda.csv", header=T, row.names=1, sep=";")
 
 #standard environmental variables
 denv=decostand(amb[,1:15], na.rm=T, method="standardize")
@@ -67,7 +77,7 @@ text("p=0.001", x=-3, y=-2)
   
   nv <- as.data.frame (si$Season)
   
-  si$Season <- c("cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia")
+  si$Season <- c("cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia", "cheia", "seca", "seca", "seca", "seca", "seca", "seca", "cheia", "cheia", "cheia", "cheia")
   
   cols <- c("chuva"="blue","seca"="limegreen")
 }
@@ -94,11 +104,14 @@ head(valor_acumuladoM)
 }
 
 #############diversity index ##################
+ # to apply for 16S or 18S replace the table with the data 16S or 18S
  #Import data
-  t=read.csv(file ="mdbRDAnew_g.csv",
+  t=read.csv(file ="microscopy.csv",
              header=T,sep=";",row.names="id")
-  
-  #apply diversity index
+  t=t[,1:59] 
+  x=t(t)
+
+  #apply diversity index in Microscopy
   x1=diversityresult(x, y=NULL, level = NULL, factor = NULL,index = "richness", method = "each site", sortit = FALSE, digits = 5)
   ## "each site" for alfa-diversity; "pooled" for gamma-diversity
   x2=diversityresult(x, y=NULL, level = NULL, factor = NULL,index = "Shannon", method = "each site", sortit = FALSE, digits = 5)
@@ -110,9 +123,11 @@ head(valor_acumuladoM)
   resultM[,1]=row.names(x1)
   resultM[,2:6]=cbind(x1,x2,x3,x4,x5)
   colnames(resultM)=c("site","richness M","Shannon M","Jevenness M","Simpson M","Eevenness M")
-
+  
 #boxplot graphic
 ##### SHANNON
+graphic=read.csv(file ="diversity_index.csv.csv",header=T,sep=";")
+  
 {
   hlinha= cbind.data.frame(graphic$Shannon.M, graphic$Shannon.16S, 
                            graphic$Shannon.18S, graphic$site)
@@ -197,7 +212,7 @@ head(valor_acumuladoM)
   
   #### Veen Diagram ####
   #tab of items
-  Vg=read.csv("venn.csv", sep=";")
+  Vg=read.csv("TCC/venn.csv", sep=";")
   
   process_region_data(Venn(Vg))
   
@@ -233,7 +248,7 @@ head(valor_acumuladoM)
   
   #### z-scrore ####
   # Table by method
-  metodo=read.csv("z_score_metodo.csv", sep=";", row.names="id")
+  metodo=read.csv("z_score_method.csv", sep=";", row.names="id")
   
   # Global table
   global=read.csv("z-score_global.csv", sep=";")
@@ -258,11 +273,10 @@ head(valor_acumuladoM)
   dados=dados_z[,9:11]
   dados= t(dados)
   
-  dados=read.csv("dados.csv", sep=";", row.names="id")
+  dados=read.csv("dados_Z.csv", sep=";", row.names="id")
   
   { 
-    
-    library(pheatmap)
+    #heatmap
     pheatmap(dados,
              cluster_rows = FALSE,     
              cluster_cols = TRUE,        

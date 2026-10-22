@@ -8,10 +8,10 @@ library(ggVennDiagram)
 
 ############dbRDA##############
 #Import data
-tab=read.csv(file ="1M/mdbRDA_s.csv", header=T, row.names="id", sep=";")
+tab=read.csv(file ="mdbRDA_s.csv", header=T, row.names="id", sep=";")
 
 #environmental data
-amb <-read.csv(file="dbRDA/BroaMO_envdbrda.csv", header=T, row.names=1, sep=";") 
+amb <-read.csv(file="BroaMO_envdbrda.csv", header=T, row.names=1, sep=";") 
 
 #standard environmental variables
 denv=decostand(amb[,1:15], na.rm=T, method="standardize")
